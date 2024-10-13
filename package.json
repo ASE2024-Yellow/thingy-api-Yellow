@@ -1,0 +1,32 @@
+{
+  "name": "thingy-api-yellow",
+  "version": "1.0.0",
+  "description": "Backend API of the Smart Mobility Project - ASE 2024 Course",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "commit": "git-cz"
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-conventional-changelog"
+    }
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "koa": "^2.15.3",
+    "koa-bodyparser": "^4.4.1",
+    "koa-router": "^13.0.1",
+    "koa2-cors": "^2.0.6"
+  },
+  "devDependencies": {
+    "@types/koa": "^2.15.0",
+    "@types/koa-bodyparser": "^4.3.12",
+    "@types/koa-router": "^7.4.8",
+    "@types/koa2-cors": "^2.0.5",
+    "commitizen": "^4.3.1",
+    "nodemon": "^3.1.7",
+    "typescript": "^5.6.3"
+  }
+}
