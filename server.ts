@@ -1,35 +1,47 @@
-/**
- * @file ./server.ts
- * @description The main entry point for the server.
- */
-
-import Koa from 'koa'
+import Koa from 'koa';
+import mongoose from 'mongoose';
 import bodyParser from 'koa-bodyparser';
-import cors from 'koa2-cors';
+import dotenv from 'dotenv';
+import mainRoutes from './routes/mainRoutes';
+import cors from '@koa/cors';
+import loggerMiddleware from './utils/loggerMiddleware';
+import jwt from 'koa-jwt';
+import helmet from 'koa-helmet';
 
-import router from './routes/mainRoutes.ts';
-import { connectToDatabase, errorHandler, startServer } from './utils/utils.ts';
+dotenv.config();
 
-// Load environment variables
-require('dotenv').config()
-
-// Create a new Koa application
 const app = new Koa();
 
-// Connect to MongoDB
-const mongoUri = process.env.MONGO_URI;
-if (!mongoUri) {
-  throw new Error('MONGO_URI is not defined in the environment variables');
-}
-connectToDatabase(mongoUri);
+// connect to mongodb
+mongoose.connect(process.env.MONGODB_URI!).then(() => {
+  console.log('MongoDB connected');
+}).catch(err => {
+  console.error(err);
+});
 
-// Add middleware to the server
-app
-  .use(bodyParser())
-  .use(cors())
-  .use(router.routes())
-  .use(router.allowedMethods())
-  .use(errorHandler);
+// enable cors with default options
+app.use(cors());
 
-// Start the server
-startServer(app, 8080);
+// Helmet middleware -> secure the app by setting various HTTP headers
+app.use(helmet());
+
+// Logger middleware -> use winston as logger
+app.use(loggerMiddleware);
+
+// Enable bodyParser with default options
+app.use(bodyParser());
+
+// JWT middleware -> use jsonwebtoken to verify token
+app.use(jwt({ secret: process.env.JWT_SECRET! }).unless({ path: [
+  /^\/user\/signin/,
+  /^\/user\/signup/,
+  /^\/users$/,
+  /^\/users\//
+]}));
+
+// Use routes
+app.use(mainRoutes.routes());
+
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
+});

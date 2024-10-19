@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "commit": "git-cz"
+    "commit": "git-cz",
+    "start": "ts-node server.ts"
   },
   "config": {
     "commitizen": {
@@ -15,20 +16,35 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@koa/cors": "^5.0.0",
+    "@types/winston": "^2.4.4",
+    "bcrypt": "^5.1.1",
     "dotenv": "^16.4.5",
     "google-auth-library": "^9.14.2",
+    "jsonwebtoken": "^9.0.2",
     "koa": "^2.15.3",
     "koa-bodyparser": "^4.4.1",
+    "koa-helmet": "^7.0.2",
+    "koa-jwt": "^4.0.4",
     "koa-router": "^13.0.1",
-    "koa2-cors": "^2.0.6",
     "mongoose": "^8.7.2",
-    "mqtt": "^5.10.1"
+    "mqtt": "^5.10.1",
+    "koa-swagger-decorator": "^1.8.7",
+    "koa2-cors": "^2.0.6",
+    "winston": "^3.15.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/dotenv": "^6.1.1",
+    "@types/jsonwebtoken": "^9.0.7",
     "@types/koa": "^2.15.0",
+    "@types/koa__cors": "^5.0.0",
     "@types/koa-bodyparser": "^4.3.12",
+    "@types/koa-helmet": "^6.0.8",
+    "@types/koa-jwt": "^3.2.2",
     "@types/koa-router": "^7.4.8",
     "@types/koa2-cors": "^2.0.5",
+    "@types/mongoose": "^5.11.96",
     "commitizen": "^4.3.1",
     "nodemon": "^3.1.7",
     "typescript": "^5.6.3"
