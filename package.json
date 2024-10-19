@@ -15,11 +15,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.4.5",
+    "google-auth-library": "^9.14.2",
     "koa": "^2.15.3",
     "koa-bodyparser": "^4.4.1",
     "koa-router": "^13.0.1",
     "koa2-cors": "^2.0.6",
-    "mongoose": "^8.7.2"
+    "mongoose": "^8.7.2",
+    "mqtt": "^5.10.1"
   },
   "devDependencies": {
     "@types/koa": "^2.15.0",

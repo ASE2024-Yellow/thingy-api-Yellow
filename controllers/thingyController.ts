@@ -5,7 +5,7 @@
 
 import { Context, Next } from 'koa';
 import Thingy from '../models/thingyModel';
-
+import { isAuthenticated } from '../utils/utils';
 
 /**
  * Controller class for handling operations related to Thingy.
@@ -17,6 +17,12 @@ class ThingyController {
      * @param next - Koa next middleware function.
      */
     static async getThingy(ctx: Context, next: Next) {
+        // let authorization = ctx.request.header.authorization;
+        // if (!authorization || !await isAuthenticated(authorization)) {
+        //     ctx.status = 401;
+        //     ctx.body = { error: 'Unauthorized' };
+        //     return;
+        // }
         const things = await Thingy.find();
         ctx.body = things;
         ctx.status = 200;
@@ -28,8 +34,13 @@ class ThingyController {
      * @param next - Koa next middleware function.
      */
     static async bindThingyToUser(ctx: Context, next: Next) {
+        // let authorization = ctx.request.header.authorization;
+        // if (!authorization || !await isAuthenticated(authorization)) {
+        //     ctx.status = 401;
+        //     ctx.body = { error: 'Unauthorized' };
+        //     return;
+        // }
         
-        const authorization = ctx.request.header.authorization;
         const { thingyId } = ctx.request.body as { thingyId: string };
         
         if (!userId || !thingyId) {
@@ -59,7 +70,13 @@ class ThingyController {
      * @param next - Koa next middleware function.
      */
     static async unbindThingyFromUser(ctx: Context, next: Next) {
-        // Implementation here
+        // const authorization = ctx.request.header.authorization;
+        // if (!authorization || !await isAuthenticated(authorization)) {
+        //     ctx.status = 401;
+        //     ctx.body = { error: 'Unauthorized' };
+        //     return;
+        // }
+
     }
 
     /**
@@ -69,6 +86,12 @@ class ThingyController {
      */
     static async getThingySensorData(ctx: Context, next: Next) {
         // Implementation here
+        // const authorization = ctx.request.header.authorization;
+        // if (!authorization || !await isAuthenticated(authorization)) {
+        //     ctx.status = 401;
+        //     ctx.body = { error: 'Unauthorized' };
+        //     return;
+        // }
     }
 }
 
