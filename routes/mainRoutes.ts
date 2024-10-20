@@ -3,7 +3,7 @@
  * @description Defines the main routes for the server using Koa Router.
  */
 import Router from 'koa-router';
-import thingyRoutes from './api/thingyRoutes.ts';
+import thingyRoutes from './api/thingyRoutes';
 import userRoutes from './api/userRoutes';
 
 

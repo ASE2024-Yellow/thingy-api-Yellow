@@ -2,7 +2,7 @@
   "name": "thingy-api-yellow",
   "version": "1.0.0",
   "description": "Backend API of the Smart Mobility Project - ASE 2024 Course",
-  "main": "server.js",
+  "main": "server.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "commit": "git-cz",
@@ -27,10 +27,10 @@
     "koa-helmet": "^7.0.2",
     "koa-jwt": "^4.0.4",
     "koa-router": "^13.0.1",
-    "mongoose": "^8.7.2",
-    "mqtt": "^5.10.1",
     "koa-swagger-decorator": "^1.8.7",
     "koa2-cors": "^2.0.6",
+    "mongoose": "^8.7.2",
+    "mqtt": "^5.10.1",
     "winston": "^3.15.0"
   },
   "devDependencies": {
@@ -47,6 +47,7 @@
     "@types/mongoose": "^5.11.96",
     "commitizen": "^4.3.1",
     "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2",
     "typescript": "^5.6.3"
   }
 }

@@ -4,8 +4,9 @@
  */
 
 import { Context, Next } from 'koa';
-import Thingy from '../models/thingyModel';
-import { isAuthenticated } from '../utils/utils';
+import Thingy, { IThingy, SensorData } from '../models/thingyModel';
+import User from '../models/userModel';
+import { Schema } from 'mongoose';
 
 /**
  * Controller class for handling operations related to Thingy.
@@ -17,12 +18,6 @@ class ThingyController {
      * @param next - Koa next middleware function.
      */
     static async getThingy(ctx: Context, next: Next) {
-        // let authorization = ctx.request.header.authorization;
-        // if (!authorization || !await isAuthenticated(authorization)) {
-        //     ctx.status = 401;
-        //     ctx.body = { error: 'Unauthorized' };
-        //     return;
-        // }
         const things = await Thingy.find();
         ctx.body = things;
         ctx.status = 200;
@@ -34,34 +29,35 @@ class ThingyController {
      * @param next - Koa next middleware function.
      */
     static async bindThingyToUser(ctx: Context, next: Next) {
-        // let authorization = ctx.request.header.authorization;
-        // if (!authorization || !await isAuthenticated(authorization)) {
-        //     ctx.status = 401;
-        //     ctx.body = { error: 'Unauthorized' };
-        //     return;
-        // }
-        
-        const { thingyId } = ctx.request.body as { thingyId: string };
-        
-        if (!userId || !thingyId) {
+        const userId = ctx.state.user.id;
+        const thingyId = ctx.params.thingyId;
+
+        if (!thingyId) {
             ctx.status = 400;
-            ctx.body = { error: 'User ID and Thingy ID are required' };
+            ctx.body = { error: 'Thingy ID are required' };
             return;
         }
         const thingy = await Thingy.findById(thingyId);
-
         if (!thingy) {
             ctx.status = 404;
             ctx.body = { error: 'Thingy not found' };
             return;
         }
-
-        thingy.userId = userId;
+        const user = await User.findById(userId);
+        if (!user) {
+            ctx.status = 404;
+            ctx.body = { error: 'User not found' };
+            return;
+        }
+        user.thingy = thingyId;
+        await user.save();
+        thingy.isAvailable = false;
         await thingy.save();
-
         ctx.status = 200;
-        ctx.body = { message: 'Thingy successfully bound to user' };
-        
+        ctx.body = { 
+            message: 'Thingy successfully bound to user',
+            thingy: thingy
+        };
     }
 
     /**
@@ -70,12 +66,43 @@ class ThingyController {
      * @param next - Koa next middleware function.
      */
     static async unbindThingyFromUser(ctx: Context, next: Next) {
-        // const authorization = ctx.request.header.authorization;
-        // if (!authorization || !await isAuthenticated(authorization)) {
-        //     ctx.status = 401;
-        //     ctx.body = { error: 'Unauthorized' };
-        //     return;
-        // }
+       const userId = ctx.state.user.id;
+        const user = await User.findById(userId);
+        if (!user) {
+            ctx.status = 404;
+            ctx.body = { error: 'User not found' };
+            return;
+        }
+
+        const thingyId = ctx.params.thingyId;
+        if (!thingyId) {
+            ctx.status = 400;
+            ctx.body = { error: 'Thingy ID is required' };
+            return;
+        }
+
+        if (!user.thingy || user.thingy.toString() !== thingyId.toString()) {
+            ctx.status = 400;
+            ctx.body = { error: 'Thingy is not bound to the user' };
+            return;
+        }
+
+        const thingy = await Thingy.findById(thingyId);
+        if (!thingy) {
+            ctx.status = 404;
+            ctx.body = { error: 'Thingy not found' };
+            return;
+        }
+        delete user.thingy;
+        await user.save();
+        thingy.isAvailable = true;
+        await thingy.save();
+
+        ctx.status = 200;
+        ctx.body = { 
+            message: 'Thingy successfully unbound from user',
+            thingy: thingy
+        };
 
     }
 
@@ -85,13 +112,42 @@ class ThingyController {
      * @param next - Koa next middleware function.
      */
     static async getThingySensorData(ctx: Context, next: Next) {
-        // Implementation here
-        // const authorization = ctx.request.header.authorization;
-        // if (!authorization || !await isAuthenticated(authorization)) {
-        //     ctx.status = 401;
-        //     ctx.body = { error: 'Unauthorized' };
-        //     return;
-        // }
+        const userId = ctx.state.user.id;
+        const sensorType = ctx.params.sensorType;
+        const startTime = ctx.request.query.startTime;
+        const endTime = ctx.request.query.endTime;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            ctx.status = 404;
+            ctx.body = { error: 'User not found' };
+            return;
+        }
+        if (!sensorType || !startTime || !endTime
+            || typeof sensorType !== 'string' || typeof startTime !== 'string' || typeof endTime !== 'string'
+        ) {
+            ctx.status = 400;
+            ctx.body = { error: 'sensorType, startTime, and endTime are required' };
+            return;
+        }
+        if (!user.thingy) {
+            ctx.status = 400;
+            ctx.body = { error: 'Thingy is not bound to the user' };
+            return;
+        }
+        const userPopulated = await user.populate<{ thingy: IThingy }>('thingy');
+        if (!userPopulated.thingy) {
+            ctx.status = 400;
+            ctx.body = { error: 'Thingy is not bound to the user' };
+            return;
+        }
+        const sensorData = await SensorData.find({ 
+            thingyName: userPopulated.thingy.name,
+            type: sensorType,
+            timestamp: { $gte: new Date(startTime), $lte: new Date(endTime) }
+        });
+        ctx.status = 200;
+        ctx.body = sensorData;
     }
 }
 

@@ -9,13 +9,15 @@ import {
 } from '../../controllers/userController';
 import { 
     signUp,
-    signIn
+    signIn,
+    googleSignIn
 } from '../../controllers/authController';
 
 const userRoutes = new Router();
 
 userRoutes.post('user/signup', signUp);
 userRoutes.post('user/signin', signIn);
+userRoutes.post('user/google-signin', googleSignIn);
 userRoutes.get('user/profile', getUserProfile);
 userRoutes.patch('user/profile', updateUserProfile);
 userRoutes.delete('user/delete', deleteUserAccount);

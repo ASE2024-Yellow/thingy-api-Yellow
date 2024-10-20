@@ -34,7 +34,7 @@ export const signUp = async (ctx: Context) => {
     password: hashedPassword,
     transportType,
   });
-
+  console.log(user);
   await user.save();
 
   ctx.status = 201;
@@ -65,7 +65,7 @@ export const signIn = async (ctx: Context) => {
     }
   
     // Compare password
-    const validPassword = await bcrypt.compare(password, user.password);
+    const validPassword = await bcrypt.compare(password, user.password!);
     if (!validPassword) {
       ctx.status = 401;
       ctx.body = { message: 'Invalid credentials.' };
@@ -82,6 +82,7 @@ export const signIn = async (ctx: Context) => {
   };
 
 export const googleSignIn = async (ctx: Context) => {
+  console.log(ctx.request.body);
   const { id_token } = ctx.request.body as { id_token: string };
 
   if (!id_token) {
@@ -102,15 +103,15 @@ export const googleSignIn = async (ctx: Context) => {
       ctx.body = { message: 'Invalid ID Token.' };
       return;
     }
-
+    console.log(payload);
     const { sub: googleId, email, name } = payload;
 
-    let user = await User.findOne({ email });
+    let user = await User.findOne({email: email});
     if (!user) {
       user = new User({
         username: name,
-        email,
-        transportType: 'default',
+        email: email,
+        transportType: 'bike',
         googleId,
       });
       await user.save();

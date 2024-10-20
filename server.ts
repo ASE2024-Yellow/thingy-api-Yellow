@@ -1,5 +1,4 @@
 import Koa from 'koa';
-import mongoose from 'mongoose';
 import bodyParser from 'koa-bodyparser';
 import dotenv from 'dotenv';
 import mainRoutes from './routes/mainRoutes';
@@ -7,17 +6,17 @@ import cors from '@koa/cors';
 import loggerMiddleware from './utils/loggerMiddleware';
 import jwt from 'koa-jwt';
 import helmet from 'koa-helmet';
+import { connectToDatabase } from './utils/utils';
+import MqttHandler from './mqtt/mqttHandle';
 
 dotenv.config();
 
 const app = new Koa();
 
 // connect to mongodb
-mongoose.connect(process.env.MONGODB_URI!).then(() => {
-  console.log('MongoDB connected');
-}).catch(err => {
-  console.error(err);
-});
+connectToDatabase(process.env.MONGODB_URI!);
+
+const mqttHandler = new MqttHandler();
 
 // enable cors with default options
 app.use(cors());
@@ -35,8 +34,7 @@ app.use(bodyParser());
 app.use(jwt({ secret: process.env.JWT_SECRET! }).unless({ path: [
   /^\/user\/signin/,
   /^\/user\/signup/,
-  /^\/users$/,
-  /^\/users\//
+  /^\/user\/google-signin/,
 ]}));
 
 // Use routes

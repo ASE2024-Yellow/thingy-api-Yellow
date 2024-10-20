@@ -19,7 +19,7 @@ export interface IThingy extends Document {
  * - description: A description of the Thingy (optional)
  */
 const ThingySchema: Schema = new Schema({
-    name: { type: String, required: true },
+    name: { type: String, required: true, unique: true },
     isAvailable: { type: Boolean, required: true },
     description: { type: String, required: false }
 });
@@ -34,6 +34,7 @@ const Thingy = mongoose.model<IThingy>('Thingy', ThingySchema);
 export interface ISensorData extends Document {
     thingyId: mongoose.Types.ObjectId;
     timestamp: Date;
+    type: 'TEMP'| 'CO2_EQUIV'| 'HUMID'| 'AIR_PRESS'| 'AIR_QUAL';
     value: number;
     
 }
@@ -47,10 +48,10 @@ export interface ISensorData extends Document {
  */
 const SensorDataSchema: Schema = new Schema(
 {
-    thingyId: { type: mongoose.Types.ObjectId, ref: 'Thingy', required: true },
+    thingyName: { type: String, required: true },
     timestamp: { type: Date, required: true },
     type: { type: String, required: true, 
-        enum: ['temperature', 'humidity', 'pressure', 'airQuality', 'color', 'motion', 'battery']
+        enum: ['TEMP', 'CO2_EQUIV', 'HUMID', 'AIR_PRESS', 'AIR_QUAL']
     },
     value: { type: Number, required: true }
 }, 
