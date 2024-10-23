@@ -8,7 +8,7 @@ info:
   title: API Title
   version: '1.0'
 servers:
-  - url: https://api.server.test/v1
+  - url: http://localhost:3000
 paths:
 
   /things:
@@ -16,12 +16,6 @@ paths:
       summary: Get all things
       tags:
         - Thingy
-      parameters:
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: A list of things
@@ -50,11 +44,6 @@ paths:
       parameters:
         - name: thingyId
           in: path
-          required: true
-          schema:
-            type: string
-        - name: Authorization
-          in: header
           required: true
           schema:
             type: string
@@ -92,11 +81,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
       responses:
         '204':
           description: Thingy unbound successfully
@@ -110,11 +94,6 @@ paths:
       tags:
         - Thingy
       parameters:
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
         - name: sensorType
           in: path
           required: true
@@ -163,12 +142,6 @@ paths:
       summary: Get user transport type
       tags:
         - User
-      parameters:
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: Transport type retrieved successfully
@@ -187,12 +160,6 @@ paths:
       summary: Change user transport type
       tags:
         - User
-      parameters:
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
       requestBody:
         required: true
         content:
@@ -231,12 +198,6 @@ paths:
       summary: Get user profile
       tags:
         - User
-      parameters:
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: User profile retrieved successfully
@@ -261,12 +222,6 @@ paths:
       summary: Modify user profile
       tags:
         - User
-      parameters:
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
       requestBody:
         required: true
         content:
@@ -312,12 +267,6 @@ paths:
       summary: Delete user account
       tags:
         - User
-      parameters:
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
       responses:
         '204':
           description: Account deleted successfully
@@ -403,12 +352,6 @@ paths:
       summary: User logout
       tags:
         - User
-      parameters:
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: Successful logout
@@ -419,12 +362,6 @@ paths:
       summary: Get all users
       tags:
         - User
-      parameters:
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: A list of users
@@ -482,3 +419,10 @@ components:
           type: boolean
         description:
           type: string
+  securitySchemes:
+    bearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT # optional, arbitrary value for documentation purposes
+security:
+  - bearerAuth: [] # use the same name as above
