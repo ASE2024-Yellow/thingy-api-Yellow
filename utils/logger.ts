@@ -1,6 +1,11 @@
+/**
+ * @file ./utils/logger.ts
+ * @description Contains the logger configuration.
+ */
 import { transports, format, createLogger } from "winston";
 import * as path from "path";
 
+// Create a logger
 const logger = createLogger({
   level: "info",
   format: format.combine(

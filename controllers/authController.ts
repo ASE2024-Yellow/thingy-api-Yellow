@@ -1,11 +1,21 @@
+/**
+ * @file ./controllers/authController.ts
+ * @description Defines the controller class for handling operations related to authentication.
+ */
+
 import { Context } from 'koa';
 import User, { IUser } from '../models/userModel';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 
+// Create a new OAuth2Client
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+/**
+ * Signs up a new user.
+ * @param ctx
+ */
 export const signUp = async (ctx: Context) => {
   const { username, email, password, transportType } = ctx.request.body as IUser;
 
@@ -46,16 +56,20 @@ export const signUp = async (ctx: Context) => {
   };
 };
 
+/**
+ * Signs in a user.
+ * @param ctx
+ */
 export const signIn = async (ctx: Context) => {
     const { username, password } = ctx.request.body as { username: string, password: string };
-  
+
     // Validate input
     if (!username || !password) {
       ctx.status = 400;
       ctx.body = { message: 'Username and password are required.' };
       return;
     }
-  
+
     // Find user
     const user = await User.findOne({ username });
     if (!user) {
@@ -63,7 +77,7 @@ export const signIn = async (ctx: Context) => {
       ctx.body = { message: 'Invalid credentials.' };
       return;
     }
-  
+
     // Compare password
     const validPassword = await bcrypt.compare(password, user.password!);
     if (!validPassword) {
@@ -71,16 +85,20 @@ export const signIn = async (ctx: Context) => {
       ctx.body = { message: 'Invalid credentials.' };
       return;
     }
-  
+
     // Generate token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, {
       expiresIn: '1d',
     });
-  
+
     ctx.status = 200;
     ctx.body = { token };
   };
 
+/**
+ * Signs in a user using Google Sign-In.
+ * @param ctx
+ */
 export const googleSignIn = async (ctx: Context) => {
   console.log(ctx.request.body);
   const { id_token } = ctx.request.body as { id_token: string };

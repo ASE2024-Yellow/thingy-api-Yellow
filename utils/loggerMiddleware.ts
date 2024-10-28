@@ -1,6 +1,11 @@
+/**
+ * @file ./utils/loggerMiddleware.ts
+ * @description Contains the logger middleware for logging requests and responses.
+ */
 import { Context } from "koa";
 import logger from "./logger";
 
+// Logger middleware
 const loggerMiddleware = async (ctx: Context, next: () => Promise<any>): Promise<void> => {
   const start = new Date().getTime();
   
