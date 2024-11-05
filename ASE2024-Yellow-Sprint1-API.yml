@@ -5,7 +5,7 @@ tags:
   - name: User
   - name: Thingy
 info:
-  title: API Title
+  title: ASE2024-Yellow-Sprint1-API
   version: '1.0'
 servers:
   - url: http://localhost:3000
@@ -100,10 +100,12 @@ paths:
           schema:
             type: string
             enum:
-              - humidity
-              - temperature
-              - pressure
-              - other
+              - HUMID
+              - TEMP
+              - AIR_PRESS
+              - AIR_QUAL
+              - CO2_EQUIV
+              - LIGHT
         - name: startTime
           in: query
           required: true
