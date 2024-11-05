@@ -3,7 +3,16 @@
  * @module mqttHandler
  */
 import mqtt from 'mqtt';
-import { SensorData } from '../models/thingyModel';
+import { SensorData, EventData } from '../models/thingyModel';
+import eventEmitter from '../utils/eventHandler';
+
+export interface IThingyMessage {
+  appId: string;
+  data: string;
+  messageType: string;
+  ts: number;
+}
+
 
 class MqttHandler {
   private mqttClient: mqtt.MqttClient;
@@ -15,15 +24,17 @@ class MqttHandler {
       port: parseInt(process.env.MQTT_PORT as string, 10),
     });
 
+    
     this.mqttClient.on('connect', () => {
       console.log('Connected to MQTT server.');
       this.mqttClient.subscribe('things/+/shadow/update');
+      
     });
 
     this.mqttClient.on('message', async (topic, message) => {
       // Parse the MQTT message
-      const data = JSON.parse(message.toString());
-
+      const data: IThingyMessage = JSON.parse(message.toString());
+  
       // Split the topic string by '/'
       const topicParts = topic.split('/');
 
@@ -44,8 +55,14 @@ class MqttHandler {
                 value: data.data,
             });
             sensorData.save();
+        } else if (data.appId === 'FLIP') {
+            console.log('thingyId:', deviceId, 'data:', data);
+            eventEmitter.emit(deviceId + '-flip', data);
+        } else if (data.appId === 'BUTTON') {
+            console.log('thingyId:', deviceId, 'data:', data);
+            eventEmitter.emit(deviceId + '-button', data);
         } else {
-            console.error('Invalid topic format:', topic);
+            console.error('Invalid topic format:', data);
         }
       }
     });

@@ -4,14 +4,20 @@
  */
 
 import { Context, Next } from 'koa';
-import Thingy, { IThingy, SensorData } from '../models/thingyModel';
+import Thingy, { EventData, IThingy, SensorData } from '../models/thingyModel';
 import User from '../models/userModel';
 import { Schema } from 'mongoose';
+import { PassThrough } from 'stream';
+import eventEmitter from '../utils/eventHandler';
+import { IThingyMessage } from '../mqtt/mqttHandle';
 
 /**
  * Controller class for handling operations related to Thingy.
  */
 class ThingyController {
+    
+
+
     /**
      * Retrieves all Thingy records.
      * @param ctx - Koa context object.
@@ -149,6 +155,150 @@ class ThingyController {
         ctx.status = 200;
         ctx.body = sensorData;
     }
+  
+
+    static async subscribetoFlipEvent(ctx: Context, next: Next) {
+        console.log('subscribetoFlipEvent');
+        const userId = ctx.state.user.id;
+        const user = await User.findById(userId);
+        if (!user) {
+            ctx.status = 404;
+            ctx.body = { error: 'User not found' };
+            return;
+        }
+        if (!user.thingy) {
+            ctx.status = 400;
+            ctx.body = { error: 'Thingy is not bound to the user' };
+            return;
+        }
+        const userPopulated = await user.populate<{ thingy: IThingy }>('thingy');
+        if (!userPopulated.thingy) {
+            ctx.status = 400;
+            ctx.body = { error: 'Thingy is not bound to the user' };
+            return;
+        }
+        const thingyId = userPopulated.thingy.name;
+        const stream = new PassThrough();
+        eventEmitter.on(thingyId + '-flip', (data: IThingyMessage) => {
+            let flipData = new EventData({
+                thingyName: thingyId,
+                timestamp: new Date(),
+                type: data.appId,
+                value: data.data,
+            });
+            flipData.save();
+            stream.write(`data: ${data}\n\n`);
+            // the data may be lost if there's problem with the connection
+            // This is the simplest way to handle it
+            // For production, we may need the stream to be closed by frontend user.
+            stream.end();
+        });
+        setInterval(() => {
+            if (stream.writable) {
+                stream.write('data: beating...\n\n');
+            }
+        }, 5000);
+        
+        ctx.request.socket.setTimeout(0);
+        ctx.req.socket.setNoDelay(true);
+        ctx.req.socket.setKeepAlive(true);
+    
+        ctx.set({
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+        });
+
+        ctx.status = 200;
+        ctx.body = stream;
+    }
+    
+    static async subscribetoButtonEvent(ctx: Context, next: Next) {
+        console.log('subscribetoButtonEvent');
+        const userId = ctx.state.user.id;
+        const user = await User.findById(userId);
+        if (!user) {
+            ctx.status = 404;
+            ctx.body = { error: 'User not found' };
+            return;
+        }
+        if (!user.thingy) {
+            ctx.status = 400;
+            ctx.body = { error: 'Thingy is not bound to the user' };
+            return;
+        }
+        const userPopulated = await user.populate<{ thingy: IThingy }>('thingy');
+        if (!userPopulated.thingy) {
+            ctx.status = 400;
+            ctx.body = { error: 'Thingy is not bound to the user' };
+            return;
+        }
+        const thingyId = userPopulated.thingy.name;
+        const stream = new PassThrough();
+        eventEmitter.on(thingyId + '-button', (data: IThingyMessage) => {
+            let buttonData = new EventData({
+                thingyName: thingyId,
+                timestamp: new Date(),
+                type: data.appId,
+                value: data.data,
+            });
+            buttonData.save();
+            stream.write(`data: ${data}\n\n`);
+            // the data may be lost if there's problem with the connection
+            // This is the simplest way to handle it
+            // For production, we may need the stream to be closed by frontend user.
+            stream.end(); 
+        });
+        setInterval(() => {
+            if (stream.writable) {
+                stream.write('data: beating...\n\n');
+            }
+        }, 5000);
+        
+        ctx.request.socket.setTimeout(0);
+        ctx.req.socket.setNoDelay(true);
+        ctx.req.socket.setKeepAlive(true);
+    
+        ctx.set({
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+        });
+
+        ctx.status = 200;
+        ctx.body = stream;
+    }
+
+   
+
+    /**
+     * Retrieves flip event history.
+     * @param ctx - Koa context object.
+     * @param next - Koa next middleware function.
+     */
+    static async getFlipEventHistory(ctx: Context, next: Next) {
+        const flipEvents = await EventData.find({ type: 'FLIP' });
+        ctx.status = 200;
+        ctx.body = flipEvents;
+    }
+
+    /**
+     * Retrieves button press event history.
+     * @param ctx - Koa context object.
+     * @param next - Koa next middleware function.
+     */
+    static async getButtonEventHistory(ctx: Context, next: Next) {
+        const buttonEvents = await EventData.find({ type: 'BUTTON' });
+        ctx.status = 200;
+        ctx.body = buttonEvents;
+    }
+
+    
+
+   
+
+    
+
 }
 
 export default ThingyController;

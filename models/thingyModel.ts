@@ -34,9 +34,8 @@ const Thingy = mongoose.model<IThingy>('Thingy', ThingySchema);
 export interface ISensorData extends Document {
     thingyId: mongoose.Types.ObjectId;
     timestamp: Date;
-    type: 'TEMP'| 'CO2_EQUIV'| 'HUMID'| 'AIR_PRESS'| 'AIR_QUAL';
+    type: 'TEMP'| 'CO2_EQUIV'| 'HUMID'| 'AIR_PRESS'| 'AIR_QUAL' | 'LIGHT';
     value: number;
-    
 }
 
 /**
@@ -51,7 +50,7 @@ const SensorDataSchema: Schema = new Schema(
     thingyName: { type: String, required: true },
     timestamp: { type: Date, required: true },
     type: { type: String, required: true, 
-        enum: ['TEMP', 'CO2_EQUIV', 'HUMID', 'AIR_PRESS', 'AIR_QUAL']
+        enum: ['TEMP', 'CO2_EQUIV', 'HUMID', 'AIR_PRESS', 'AIR_QUAL', 'LIGHT']
     },
     value: { type: Number, required: true }
 }, 
@@ -68,7 +67,37 @@ const SensorDataSchema: Schema = new Schema(
 // Create a Mongoose model from the schema and export it
 const SensorData = mongoose.model<ISensorData>('SensorData', SensorDataSchema);
 
-export { SensorData };
+export interface IEventData extends Document {
+    thingyId: mongoose.Types.ObjectId;
+    timestamp: Date;
+    type: 'FLIP' | 'BUTTON';
+    value: string;
+}
+
+const EventDataSchema: Schema = new Schema({
+    thingyName: { type: String, required: true },
+    timestamp: { type: Date, required: true },
+    type: { type: String, required: true, 
+        enum: ['FLIP', 'BUTTON']
+    },
+    value: { type: String, required: true }
+},
+{
+    timeseries: {
+        timeField: 'timestamp',
+        // metaField: 'metadata',
+        granularity: 'seconds'
+    },
+    autoCreate: false,
+    expireAfterSeconds: 86400
+});
+
+const EventData = mongoose.model<IEventData>('EventData', EventDataSchema);
+
+
+
+
+export { SensorData, EventData };
 
 
 export default Thingy;
