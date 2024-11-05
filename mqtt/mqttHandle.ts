@@ -54,6 +54,26 @@ class MqttHandler {
       console.error('MQTT connection error:', error);
     });
   }
+
+  /**
+     * Publishes a message to the MQTT server.
+     * @param deviceId - The device UUID.
+     * @param message - The message to publish.
+     */
+  public publish(deviceId: string, message: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const topic = `things/${deviceId}/shadow/update/accepted`;
+        this.mqttClient.publish(topic, message, (err) => {
+            if (err) {
+                console.error('Error publishing MQTT message:', err);
+                reject(err);
+            } else {
+                console.log('Message published to MQTT topic:', topic);
+                resolve();
+            }
+        });
+    });
+}
 }
 
 

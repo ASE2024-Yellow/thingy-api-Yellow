@@ -19,4 +19,10 @@ thingyRoutes.delete('/:thingyId/unbind', ThingyController.unbindThingyFromUser);
 
 thingyRoutes.get('/sensorData/:sensorType', ThingyController.getThingySensorData);
 
+thingyRoutes.post('/buzzer/:setting', ThingyController.setBuzzer);
+
+thingyRoutes.post('/LED/setColor/:color', ThingyController.setLEDColor);
+
+thingyRoutes.get('/sensorData/:sensorType/statistics/:statistic', ThingyController.getSensorDataStatistics);
+
 export default thingyRoutes;
