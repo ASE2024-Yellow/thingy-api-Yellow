@@ -10,6 +10,7 @@ import { Schema } from 'mongoose';
 import { PassThrough } from 'stream';
 import eventEmitter from '../utils/eventHandler';
 import { IThingyMessage } from '../mqtt/mqttHandle';
+import MqttHandler from '../mqtt/mqttHandle';
 
 /**
  * Controller class for handling operations related to Thingy.
@@ -299,6 +300,204 @@ class ThingyController {
 
     
 
+
+    /**
+     * Controls the Thingy's buzzer (turn ON/OFF).
+     * @param ctx - Koa context object.
+     * @param next - Koa next middleware function.
+     */
+    static async setBuzzer(ctx: Context, next: Next) {
+        const userId = ctx.state.user.id;
+        const setting = ctx.params.setting; // 'on' or 'off'
+
+        if (!['on', 'off'].includes(setting)) {
+            ctx.status = 400;
+            ctx.body = { status: 'error', message: 'Invalid setting parameter' };
+            return;
+        }
+
+        const user = await User.findById(userId);
+        if (!user || !user.thingy) {
+            ctx.status = 404;
+            ctx.body = { status: 'error', message: 'Thingy not bound to user' };
+            return;
+        }
+
+        const thingy = await Thingy.findById(user.thingy);
+        if (!thingy) {
+            ctx.status = 404;
+            ctx.body = { status: 'error', message: 'Thingy not found' };
+            return;
+        }
+
+        const mqttHandler = new MqttHandler();
+        const deviceId = thingy.name;
+
+        const frequency = setting === 'on' ? 3000 : 0;
+        const message = JSON.stringify({
+            appId: 'BUZZER',
+            data: { frequency },
+            messageType: 'CFG_SET',
+        });
+
+        try {
+            await mqttHandler.publish(deviceId, message);
+            ctx.status = 200;
+            ctx.body = {
+                status: 'success',
+                data: { message },
+            };
+        } catch (error) {
+            ctx.status = 500;
+            ctx.body = {
+                status: 'error',
+                message: 'An error occurred while processing the request',
+            };
+        }
+    }
+
+    /**
+     * Sets the Thingy's LED color.
+     * @param ctx - Koa context object.
+     * @param next - Koa next middleware function.
+     */
+    static async setLEDColor(ctx: Context, next: Next) {
+        const userId = ctx.state.user.id;
+        const color = ctx.params.color; // 'green', 'red', 'blue'
+
+        const colorMap: { [key: string]: string } = {
+            red: 'ff0000',
+            green: '00ff00',
+            blue: '0000ff',
+        };
+
+        if (!Object.keys(colorMap).includes(color)) {
+            ctx.status = 400;
+            ctx.body = { status: 'error', message: 'Invalid color parameter' };
+            return;
+        }
+
+        const user = await User.findById(userId);
+        if (!user || !user.thingy) {
+            ctx.status = 404;
+            ctx.body = { status: 'error', message: 'Thingy not bound to user' };
+            return;
+        }
+
+        const thingy = await Thingy.findById(user.thingy);
+        if (!thingy) {
+            ctx.status = 404;
+            ctx.body = { status: 'error', message: 'Thingy not found' };
+            return;
+        }
+
+        const mqttHandler = new MqttHandler();
+        const deviceId = thingy.name;
+
+        const message = JSON.stringify({
+            appId: 'LED',
+            data: { color: colorMap[color] },
+            messageType: 'CFG_SET',
+        });
+
+        try {
+            await mqttHandler.publish(deviceId, message);
+            ctx.status = 200;
+            ctx.body = {
+                status: 'success',
+                data: { message },
+            };
+        } catch (error) {
+            ctx.status = 500;
+            ctx.body = {
+                status: 'error',
+                message: 'An error occurred while processing the request',
+            };
+        }
+    }
+
+    /**
+     * Retrieves statistics of sensor data.
+     * @param ctx - Koa context object.
+     * @param next - Koa next middleware function.
+     */
+    static async getSensorDataStatistics(ctx: Context, next: Next) {
+        const userId = ctx.state.user.id;
+        const sensorType = ctx.params.sensorType;
+        const statistic = ctx.params.statistic; // 'min', 'max', 'average'
+        const startTime = ctx.query.startTime as string;
+        const endTime = ctx.query.endTime as string;
+
+        const validSensorTypes = ['TEMP', 'HUMID', 'AIR_PRESS', 'AIR_QUAL', 'CO2_EQUIV', 'LIGHT'];
+        const validStatistics = ['min', 'max', 'average'];
+
+        if (!validSensorTypes.includes(sensorType) || !validStatistics.includes(statistic)) {
+            ctx.status = 400;
+            ctx.body = { error: 'Invalid sensorType or statistic parameter' };
+            return;
+        }
+
+        if (!startTime || !endTime) {
+            ctx.status = 400;
+            ctx.body = { error: 'startTime and endTime are required' };
+            return;
+        }
+
+        const user = await User.findById(userId).populate<{ thingy: IThingy }>('thingy');
+        if (!user || !user.thingy) {
+            ctx.status = 404;
+            ctx.body = { error: 'Thingy not bound to user' };
+            return;
+        }
+
+        const thingyName = user.thingy.name;
+        const startDate = new Date(startTime);
+        const endDate = new Date(endTime);
+
+        try {
+            const matchCondition = {
+                thingyName,
+                type: sensorType,
+                timestamp: { $gte: startDate, $lte: endDate },
+            };
+
+            let aggregationPipeline = [
+                { $match: matchCondition },
+                {
+                    $group: {
+                        _id: null,
+                        value:
+                            statistic === 'average'
+                                ? { $avg: '$value' }
+                                : statistic === 'min'
+                                ? { $min: '$value' }
+                                : { $max: '$value' },
+                    },
+                },
+            ];
+
+            const result = await SensorData.aggregate(aggregationPipeline);
+
+            if (result.length === 0) {
+                ctx.status = 404;
+                ctx.body = { error: 'No data found for the given parameters' };
+                return;
+            }
+
+            ctx.status = 200;
+            ctx.body = {
+                timestamp: new Date().toISOString(),
+                sensorType,
+                value: result[0].value,
+            };
+        } catch (error) {
+            ctx.status = 500;
+            ctx.body = {
+                status: 'error',
+                message: 'An error occurred while processing the request',
+            };
+        }
+    }
 }
 
 export default ThingyController;

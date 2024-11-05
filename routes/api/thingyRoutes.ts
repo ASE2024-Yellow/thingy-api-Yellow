@@ -21,4 +21,10 @@ thingyRoutes.get('/flips', ThingyController.getFlipEventHistory);
 thingyRoutes.get('/buttons', ThingyController.getButtonEventHistory);
 
 
+thingyRoutes.post('/buzzer/:setting', ThingyController.setBuzzer);
+
+thingyRoutes.post('/LED/setColor/:color', ThingyController.setLEDColor);
+
+thingyRoutes.get('/sensorData/:sensorType/statistics/:statistic', ThingyController.getSensorDataStatistics);
+
 export default thingyRoutes;
