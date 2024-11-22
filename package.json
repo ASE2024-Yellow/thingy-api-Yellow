@@ -18,7 +18,7 @@
   "dependencies": {
     "@koa/cors": "^5.0.0",
     "@types/winston": "^2.4.4",
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.5",
     "google-auth-library": "^9.14.2",
     "jsonwebtoken": "^9.0.2",
