@@ -11,6 +11,7 @@ services:
       - MONGODB_URI=mongodb://mongo:27017/database
     volumes:
       - .:/usr/src/app
+    restart: on-failure
 
   mongo:
     image: mongo:latest
