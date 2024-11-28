@@ -31,7 +31,9 @@
     "koa2-cors": "^2.0.6",
     "mongoose": "^8.7.2",
     "mqtt": "^5.10.1",
-    "winston": "^3.15.0"
+    "winston": "^3.15.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
