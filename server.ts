@@ -6,7 +6,8 @@ import cors from '@koa/cors';
 import loggerMiddleware from './utils/loggerMiddleware';
 import jwt from 'koa-jwt';
 import helmet from 'koa-helmet';
-import { connectToDatabase } from './utils/utils';
+import MongoDBHandler from './utils/mongoDBHandler';
+import InfluxDBHandler from './utils/influxDBHandler';
 import MqttHandler from './mqtt/mqttHandle';
 
 dotenv.config();
@@ -14,9 +15,13 @@ dotenv.config();
 const app = new Koa();
 
 // connect to mongodb
-connectToDatabase(process.env.MONGODB_URI!);
+MongoDBHandler.getInstance().connect();
 
-const mqttHandler = new MqttHandler();
+// connect to influxdb 
+InfluxDBHandler.getInstance().getClient();
+
+// connect to mqtt
+MqttHandler.getInstance().getClient();
 
 // enable cors with default options
 app.use(cors());

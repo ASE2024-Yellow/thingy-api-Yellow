@@ -16,6 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@influxdata/influxdb-client": "^1.35.0",
     "@koa/cors": "^5.0.0",
     "@types/winston": "^2.4.4",
     "bcrypt": "^5.1.1",

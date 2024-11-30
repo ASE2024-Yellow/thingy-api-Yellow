@@ -32,7 +32,7 @@ const Thingy = mongoose.model<IThingy>('Thingy', ThingySchema);
 
 // Define the interface for the SensorData model
 export interface ISensorData extends Document {
-    thingyId: mongoose.Types.ObjectId;
+    thingyName: string;
     timestamp: Date;
     type: 'TEMP'| 'CO2_EQUIV'| 'HUMID'| 'AIR_PRESS'| 'AIR_QUAL' | 'LIGHT';
     value: number;
@@ -68,7 +68,7 @@ const SensorDataSchema: Schema = new Schema(
 const SensorData = mongoose.model<ISensorData>('SensorData', SensorDataSchema);
 
 export interface IEventData extends Document {
-    thingyId: mongoose.Types.ObjectId;
+    thingyName: string;
     timestamp: Date;
     type: 'FLIP' | 'BUTTON';
     value: string;
