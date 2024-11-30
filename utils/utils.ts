@@ -3,7 +3,7 @@
  * @description Contains utility functions for the server.
  */
 
-import Koa from 'koa';
+// import Koa from 'koa';
 import mongoose from 'mongoose';
 import Thingy from '../models/thingyModel';
 

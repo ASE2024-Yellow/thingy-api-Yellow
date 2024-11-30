@@ -5,7 +5,7 @@
 
 import { Context } from 'koa';
 import User, { IUser } from '../models/userModel';
-import logger from '../utils/logger';
+// import logger from '../utils/logger';
 
 /**
  * Retrieves the transportType of the authenticated user.
@@ -26,6 +26,7 @@ export const getUserTransportType = async (ctx: Context) => {
         transportType: user.transportType,
       };
     } catch (error) {
+      console.error(error);
       ctx.status = 500;
       ctx.body = { message: 'Internal server error.' };
     }
@@ -67,6 +68,7 @@ export const updateUserTransportType = async (ctx: Context) => {
         transportType: user.transportType,
       };
     } catch (error) {
+      console.error(error);
       ctx.status = 500;
       ctx.body = { message: 'Internal server error.' };
     }
@@ -133,6 +135,7 @@ export const getAllUsers = async (ctx: Context) => {
     ctx.status = 200;
     ctx.body = users;
   } catch (error) {
+    console.error(error);
     ctx.status = 500;
     ctx.body = { message: 'Internal server error.' };
   }

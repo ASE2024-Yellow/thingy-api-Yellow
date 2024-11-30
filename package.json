@@ -34,6 +34,7 @@
     "winston": "^3.15.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.16.0",
     "@types/bcrypt": "^5.0.2",
     "@types/dotenv": "^6.1.1",
     "@types/jsonwebtoken": "^9.0.7",
@@ -46,8 +47,11 @@
     "@types/koa2-cors": "^2.0.5",
     "@types/mongoose": "^5.11.96",
     "commitizen": "^4.3.1",
+    "eslint": "^9.16.0",
+    "globals": "^15.12.0",
     "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.16.0"
   }
 }

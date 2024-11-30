@@ -3,10 +3,9 @@
  * @description Defines the controller class for handling operations related to Thingy.
  */
 
-import { Context, Next } from 'koa';
+import { Context } from 'koa';
 import Thingy, { EventData, IThingy, SensorData } from '../models/thingyModel';
 import User from '../models/userModel';
-import { Schema } from 'mongoose';
 import { PassThrough } from 'stream';
 import eventEmitter from '../utils/eventHandler';
 import { IThingyMessage } from '../mqtt/mqttHandle';
@@ -24,7 +23,7 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async getThingy(ctx: Context, next: Next) {
+    static async getThingy(ctx: Context) {
         const things = await Thingy.find();
         ctx.body = things;
         ctx.status = 200;
@@ -35,7 +34,7 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async bindThingyToUser(ctx: Context, next: Next) {
+    static async bindThingyToUser(ctx: Context) {
         const userId = ctx.state.user.id;
         const thingyId = ctx.params.thingyId;
 
@@ -72,7 +71,7 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async unbindThingyFromUser(ctx: Context, next: Next) {
+    static async unbindThingyFromUser(ctx: Context) {
        const userId = ctx.state.user.id;
         const user = await User.findById(userId);
         if (!user) {
@@ -118,7 +117,7 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async getThingySensorData(ctx: Context, next: Next) {
+    static async getThingySensorData(ctx: Context) {
         const userId = ctx.state.user.id;
         const sensorType = ctx.params.sensorType;
         const startTime = ctx.request.query.startTime;
@@ -158,7 +157,7 @@ class ThingyController {
     }
   
 
-    static async subscribetoFlipEvent(ctx: Context, next: Next) {
+    static async subscribetoFlipEvent(ctx: Context) {
         console.log('subscribetoFlipEvent');
         const userId = ctx.state.user.id;
         const user = await User.findById(userId);
@@ -181,7 +180,7 @@ class ThingyController {
         const thingyId = userPopulated.thingy.name;
         const stream = new PassThrough();
         eventEmitter.on(thingyId + '-flip', (data: IThingyMessage) => {
-            let flipData = new EventData({
+            const flipData = new EventData({
                 thingyName: thingyId,
                 timestamp: new Date(),
                 type: data.appId,
@@ -214,7 +213,7 @@ class ThingyController {
         ctx.body = stream;
     }
     
-    static async subscribetoButtonEvent(ctx: Context, next: Next) {
+    static async subscribetoButtonEvent(ctx: Context) {
         console.log('subscribetoButtonEvent');
         const userId = ctx.state.user.id;
         const user = await User.findById(userId);
@@ -237,7 +236,7 @@ class ThingyController {
         const thingyId = userPopulated.thingy.name;
         const stream = new PassThrough();
         eventEmitter.on(thingyId + '-button', (data: IThingyMessage) => {
-            let buttonData = new EventData({
+            const buttonData = new EventData({
                 thingyName: thingyId,
                 timestamp: new Date(),
                 type: data.appId,
@@ -277,7 +276,7 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async getFlipEventHistory(ctx: Context, next: Next) {
+    static async getFlipEventHistory(ctx: Context) {
         const flipEvents = await EventData.find({ type: 'FLIP' });
         ctx.status = 200;
         ctx.body = flipEvents;
@@ -288,7 +287,7 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async getButtonEventHistory(ctx: Context, next: Next) {
+    static async getButtonEventHistory(ctx: Context) {
         const buttonEvents = await EventData.find({ type: 'BUTTON' });
         ctx.status = 200;
         ctx.body = buttonEvents;
@@ -306,7 +305,7 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async setBuzzer(ctx: Context, next: Next) {
+    static async setBuzzer(ctx: Context) {
         const userId = ctx.state.user.id;
         const setting = ctx.params.setting; // 'on' or 'off'
 
@@ -348,6 +347,7 @@ class ThingyController {
                 data: { message },
             };
         } catch (error) {
+            console.error('Error setting buzzer:', error);
             ctx.status = 500;
             ctx.body = {
                 status: 'error',
@@ -361,7 +361,7 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async setLEDColor(ctx: Context, next: Next) {
+    static async setLEDColor(ctx: Context) {
         const userId = ctx.state.user.id;
         const color = ctx.params.color; // 'green', 'red', 'blue'
 
@@ -408,6 +408,7 @@ class ThingyController {
                 data: { message },
             };
         } catch (error) {
+            console.error('Error setting LED color:', error);
             ctx.status = 500;
             ctx.body = {
                 status: 'error',
@@ -421,7 +422,7 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async getSensorDataStatistics(ctx: Context, next: Next) {
+    static async getSensorDataStatistics(ctx: Context) {
         const userId = ctx.state.user.id;
         const sensorType = ctx.params.sensorType;
         const statistic = ctx.params.statistic; // 'min', 'max', 'average'
@@ -461,7 +462,7 @@ class ThingyController {
                 timestamp: { $gte: startDate, $lte: endDate },
             };
 
-            let aggregationPipeline = [
+            const aggregationPipeline = [
                 { $match: matchCondition },
                 {
                     $group: {
@@ -491,6 +492,7 @@ class ThingyController {
                 value: result[0].value,
             };
         } catch (error) {
+            console.error('Error retrieving sensor data statistics:', error);
             ctx.status = 500;
             ctx.body = {
                 status: 'error',

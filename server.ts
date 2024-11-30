@@ -16,7 +16,7 @@ const app = new Koa();
 // connect to mongodb
 connectToDatabase(process.env.MONGODB_URI!);
 
-const mqttHandler = new MqttHandler();
+new MqttHandler();
 
 // enable cors with default options
 app.use(cors());

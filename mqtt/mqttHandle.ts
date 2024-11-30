@@ -3,7 +3,7 @@
  * @module mqttHandler
  */
 import mqtt from 'mqtt';
-import { SensorData, EventData } from '../models/thingyModel';
+import { SensorData } from '../models/thingyModel';
 import eventEmitter from '../utils/eventHandler';
 
 export interface IThingyMessage {
@@ -48,7 +48,7 @@ class MqttHandler {
 
         if (['TEMP', 'CO2_EQUIV', 'HUMID', 'AIR_PRESS', 'AIR_QUAL'].includes(data.appId)){
             console.log('thingyId:', deviceId, 'data:', data);
-            let sensorData = new SensorData({
+            const sensorData = new SensorData({
                 thingyName: deviceId,
                 timestamp: new Date(),
                 type: data.appId,
