@@ -30,7 +30,7 @@ app.use(cors());
 app.use(helmet());
 
 // Logger middleware -> use winston as logger
-app.use(loggerMiddleware);
+// app.use(loggerMiddleware);
 
 // Enable bodyParser with default options
 app.use(bodyParser());

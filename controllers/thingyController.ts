@@ -149,14 +149,14 @@ class ThingyController {
             ctx.body = { error: 'Thingy is not bound to the user' };
             return;
         }
+        
         const query = `from(bucket: "${process.env.INFLUXDB_BUCKET}")
             |> range(start: ${new Date(startTime).toISOString()}, stop: ${new Date(endTime).toISOString()})
             |> filter(fn: (r) => r["_measurement"] == "sensor_data")
             |> filter(fn: (r) => r["thingyName"] == "${userPopulated.thingy.name}")
             |> filter(fn: (r) => r["_field"] == "${sensorType}")`;
-        
         ctx.status = 200;
-        ctx.body = InfluxDBHandler.getInstance().queryData(query);
+        ctx.body = await InfluxDBHandler.getInstance().queryData(query);
     }
   
 
@@ -185,8 +185,8 @@ class ThingyController {
         eventEmitter.on(thingyId + '-flip', (data: IThingyMessage) => {
             let flipData = new Point('flip_events')
                                 .tag('thingyName', thingyId)
-                                .floatField(data.appId, parseFloat(data.data))
-                                .timestamp(new Date(data.ts));
+                                .stringField(data.appId, data.data)
+                                .timestamp(new Date());
             InfluxDBHandler.getInstance().writeData(flipData);
             stream.write(`data: ${data}\n\n`);
             // the data may be lost if there's problem with the connection
@@ -239,8 +239,8 @@ class ThingyController {
         eventEmitter.on(thingyId + '-button', (data: IThingyMessage) => {
             let buttonData = new Point('button_events')
                                 .tag('thingyName', thingyId)
-                                .floatField(data.appId, parseFloat(data.data))
-                                .timestamp(new Date(data.ts));
+                                .stringField(data.appId, data.data)
+                                .timestamp(new Date());
             InfluxDBHandler.getInstance().writeData(buttonData);
             stream.write(`data: ${data}\n\n`);
             // the data may be lost if there's problem with the connection

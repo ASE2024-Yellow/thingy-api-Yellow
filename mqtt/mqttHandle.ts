@@ -69,7 +69,7 @@ class MqttHandler {
                 let point = new Point('sensor_data')
                                 .tag('thingyName', deviceId)
                                 .floatField(data.appId, parseFloat(data.data))
-                                .timestamp(new Date(data.ts));
+                                .timestamp(new Date());
                 InfluxDBHandler.getInstance().writeData(point);
             } else if (data.appId === 'FLIP') {
                 console.log('thingyId:', deviceId, 'data:', data);

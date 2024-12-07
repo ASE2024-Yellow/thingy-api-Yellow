@@ -69,6 +69,7 @@ class InfluxDBHandler {
     private async connectToInfluxDB(): Promise<InfluxDB> {
         try {
             const client = new InfluxDB({ url: process.env.INFLUXDB_URI!, token: process.env.INFLUXDB_TOKEN! });
+            
             console.log('connected to InfluxDB');
             return client;
         } catch (error) {
@@ -110,27 +111,35 @@ class InfluxDBHandler {
      */
     public async queryData(query: string): Promise<ISensorData[]> {
         try {
+            console.log(query);
             const queryApi = (await this.getClient()).getQueryApi(process.env.INFLUXDB_ORG!);
-            let result: ISensorData[] = [];
-            
-            queryApi.queryRows(query, {
-                next: (row, tableMeta) => {
-                    const rowObject = tableMeta.toObject(row);
-                    result.push({
-                        thingyName: rowObject.device,
-                        type: rowObject._field,
-                        value: rowObject._value,
-                        timestamp: rowObject._time,
-                    });
-                },
-                error: error => {
-                    console.error('Error querying data from InfluxDB', error);
-                    throw error;
-                },
-                complete: () => {
-                    console.log('Query complete');
-                },
-            })
+            var result: ISensorData[] = [];
+
+            await new Promise<void>((resolve, reject) => {
+                queryApi.queryRows(query, {
+                    next: (row, tableMeta) => {
+                        // console.log(row);
+                        const rowObject = tableMeta.toObject(row);
+                        // console.log(rowObject);
+                        result.push({
+                            thingyName: rowObject.device,
+                            type: rowObject._field,
+                            value: rowObject._value,
+                            timestamp: rowObject._time,
+                        });
+                    },
+                    error: error => {
+                        console.error('Error querying data from InfluxDB', error);
+                        reject(error);
+                    },
+                    complete: () => {
+                        console.log('Query complete');
+                        console.log(result);
+                        resolve();
+                    },
+                });
+            });
+
             return result;
         } catch (error) {
             console.error('Error querying data from InfluxDB', error);
