@@ -1,16 +1,18 @@
 version: '3.8'
 
 services:
-  app:
-    build: .
+  ts-node-docker:
     ports:
       - "3000:3000"
+    build:
+      target: production
     depends_on:
       - mongo
     environment:
       - MONGODB_URI=mongodb://mongo:27017/database
     volumes:
       - .:/usr/src/app
+    command: node dist/server.js
 
   mongo:
     image: mongo:latest

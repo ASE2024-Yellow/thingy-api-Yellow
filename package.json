@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "commit": "git-cz",
-    "start": "ts-node server.ts"
+    "start": "./node_modules/.bin/ts-node server.ts",
+    "build": "tsc"
   },
   "config": {
     "commitizen": {
@@ -19,7 +20,7 @@
     "@influxdata/influxdb-client": "^1.35.0",
     "@koa/cors": "^5.0.0",
     "@types/winston": "^2.4.4",
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.5",
     "google-auth-library": "^9.14.2",
     "jsonwebtoken": "^9.0.2",
@@ -32,6 +33,8 @@
     "koa2-cors": "^2.0.6",
     "mongoose": "^8.7.2",
     "mqtt": "^5.10.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2",
     "winston": "^3.15.0"
   },
   "devDependencies": {
@@ -47,8 +50,6 @@
     "@types/koa2-cors": "^2.0.5",
     "@types/mongoose": "^5.11.96",
     "commitizen": "^4.3.1",
-    "nodemon": "^3.1.7",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.6.3"
+    "nodemon": "^3.1.7"
   }
 }
