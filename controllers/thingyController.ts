@@ -11,7 +11,8 @@ import { PassThrough } from 'stream';
 import eventEmitter from '../utils/eventHandler';
 import { IThingyMessage } from '../mqtt/mqttHandle';
 import MqttHandler from '../mqtt/mqttHandle';
-
+import { Point } from '@influxdata/influxdb-client';
+import InfluxDBHandler from '../utils/influxDBHandler';
 /**
  * Controller class for handling operations related to Thingy.
  */
@@ -123,7 +124,7 @@ class ThingyController {
         const sensorType = ctx.params.sensorType;
         const startTime = ctx.request.query.startTime;
         const endTime = ctx.request.query.endTime;
-
+            
         const user = await User.findById(userId);
         if (!user) {
             ctx.status = 404;
@@ -148,13 +149,14 @@ class ThingyController {
             ctx.body = { error: 'Thingy is not bound to the user' };
             return;
         }
-        const sensorData = await SensorData.find({ 
-            thingyName: userPopulated.thingy.name,
-            type: sensorType,
-            timestamp: { $gte: new Date(startTime), $lte: new Date(endTime) }
-        });
+        
+        const query = `from(bucket: "${process.env.INFLUXDB_BUCKET}")
+            |> range(start: ${new Date(startTime).toISOString()}, stop: ${new Date(endTime).toISOString()})
+            |> filter(fn: (r) => r["_measurement"] == "sensor_data")
+            |> filter(fn: (r) => r["thingyName"] == "${userPopulated.thingy.name}")
+            |> filter(fn: (r) => r["_field"] == "${sensorType}")`;
         ctx.status = 200;
-        ctx.body = sensorData;
+        ctx.body = await InfluxDBHandler.getInstance().queryData(query);
     }
   
 
@@ -181,13 +183,11 @@ class ThingyController {
         const thingyId = userPopulated.thingy.name;
         const stream = new PassThrough();
         eventEmitter.on(thingyId + '-flip', (data: IThingyMessage) => {
-            let flipData = new EventData({
-                thingyName: thingyId,
-                timestamp: new Date(),
-                type: data.appId,
-                value: data.data,
-            });
-            flipData.save();
+            let flipData = new Point('flip_events')
+                                .tag('thingyName', thingyId)
+                                .stringField(data.appId, data.data)
+                                .timestamp(new Date());
+            InfluxDBHandler.getInstance().writeData(flipData);
             stream.write(`data: ${data}\n\n`);
             // the data may be lost if there's problem with the connection
             // This is the simplest way to handle it
@@ -237,13 +237,11 @@ class ThingyController {
         const thingyId = userPopulated.thingy.name;
         const stream = new PassThrough();
         eventEmitter.on(thingyId + '-button', (data: IThingyMessage) => {
-            let buttonData = new EventData({
-                thingyName: thingyId,
-                timestamp: new Date(),
-                type: data.appId,
-                value: data.data,
-            });
-            buttonData.save();
+            let buttonData = new Point('button_events')
+                                .tag('thingyName', thingyId)
+                                .stringField(data.appId, data.data)
+                                .timestamp(new Date());
+            InfluxDBHandler.getInstance().writeData(buttonData);
             stream.write(`data: ${data}\n\n`);
             // the data may be lost if there's problem with the connection
             // This is the simplest way to handle it
@@ -278,7 +276,10 @@ class ThingyController {
      * @param next - Koa next middleware function.
      */
     static async getFlipEventHistory(ctx: Context, next: Next) {
-        const flipEvents = await EventData.find({ type: 'FLIP' });
+        const query = `from(bucket: "${process.env.INFLUXDB_BUCKET}")
+            |> range(start: -30d)
+            |> filter(fn: (r) => r["_measurement"] == "flip_events")`;
+        const flipEvents = await InfluxDBHandler.getInstance().queryData(query);
         ctx.status = 200;
         ctx.body = flipEvents;
     }
@@ -289,7 +290,10 @@ class ThingyController {
      * @param next - Koa next middleware function.
      */
     static async getButtonEventHistory(ctx: Context, next: Next) {
-        const buttonEvents = await EventData.find({ type: 'BUTTON' });
+        const query = `from(bucket: "${process.env.INFLUXDB_BUCKET}")
+            |> range(start: -30d)
+            |> filter(fn: (r) => r["_measurement"] == "flip_events")`;
+        const buttonEvents = await InfluxDBHandler.getInstance().queryData(query);
         ctx.status = 200;
         ctx.body = buttonEvents;
     }
@@ -330,7 +334,6 @@ class ThingyController {
             return;
         }
 
-        const mqttHandler = new MqttHandler();
         const deviceId = thingy.name;
 
         const frequency = setting === 'on' ? 3000 : 0;
@@ -341,7 +344,7 @@ class ThingyController {
         });
 
         try {
-            await mqttHandler.publish(deviceId, message);
+            await MqttHandler.getInstance().publish(deviceId, message);
             ctx.status = 200;
             ctx.body = {
                 status: 'success',
@@ -391,7 +394,6 @@ class ThingyController {
             return;
         }
 
-        const mqttHandler = new MqttHandler();
         const deviceId = thingy.name;
 
         const message = JSON.stringify({
@@ -401,7 +403,7 @@ class ThingyController {
         });
 
         try {
-            await mqttHandler.publish(deviceId, message);
+            await MqttHandler.getInstance().publish(deviceId, message);
             ctx.status = 200;
             ctx.body = {
                 status: 'success',

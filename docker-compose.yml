@@ -8,6 +8,7 @@ services:
       target: production
     depends_on:
       - mongo
+      - influxdb
     environment:
       - MONGODB_URI=mongodb://mongo:27017/database
     volumes:
@@ -21,5 +22,13 @@ services:
     volumes:
       - mongo-data:/data/db
 
+  influxdb:
+    image: influxdb:latest
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+
 volumes:
   mongo-data:
+  influxdb-data:
