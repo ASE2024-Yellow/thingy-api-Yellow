@@ -1,22 +1,24 @@
-import { resolve as _resolve } from 'path';
+const path = require('path');
 
-export const entry = './server.ts';
-export const target = 'node';
-export const mode = 'production';
-export const module = {
-  rules: [
-    {
-      test: /\.ts$/,
-      use: 'ts-loader',
-      exclude: /node_modules/,
-    },
-  ],
-};
-export const resolve = {
-  extensions: ['.ts', '.js'],
-};
-export const output = {
-  filename: 'server.js',
-  path: _resolve(__dirname, 'dist'),
+module.exports = {
+  entry: './server.ts',
+  target: 'node',
+  mode: 'production',
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
+    ],
+  },
+  resolve: {
+    extensions: ['.ts', '.js'],
+  },
+  output: {
+    filename: 'server.js',
+    path: path.resolve(__dirname, 'dist'),
+  },
 };
 
