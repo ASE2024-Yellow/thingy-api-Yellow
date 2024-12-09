@@ -1,4 +1,5 @@
 # thingy-api-Yellow
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/f787516c9d074c3bb14e8155cdd1d683)](https://app.codacy.com?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 ## Introduction
 Our project is Bike Accident Detection. 
 
