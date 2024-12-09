@@ -29,14 +29,14 @@ jobs:
         npm install -D webpack-cli
         npx webpack
       env:
-        MONGODB_URI: ${{ secret.MONGODB_URI }}
-        INFLUXDB_URI: ${{ secret.INFLUXDB_URI }}
-        INFLUXDB_TOKEN: ${{ secret.INFLUXDB_TOKEN }}
-        INFLUXDB_ORG: ${{ secret.INFLUXDB_ORG }}
-        INFLUXDB_BUCKET: ${{ secret.INFLUXDB_BUCKET }}
-        MQTT_USR: ${{ secret.MQTT_USR }}
-        MQTT_PWD: ${{ secret.MQTT_PWD }}
-        MQTT_SERVER: ${{ secret.MQTT_SERVER }}
-        MQTT_PORT: ${{ secret.MQTT_PORT }}
-        JWT_SECRET: ${{ secret.JWT_SECRET }}
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        INFLUXDB_URI: ${{ secrets.INFLUXDB_URI }}
+        INFLUXDB_TOKEN: ${{ secrets.INFLUXDB_TOKEN }}
+        INFLUXDB_ORG: ${{ secrets.INFLUXDB_ORG }}
+        INFLUXDB_BUCKET: ${{ secrets.INFLUXDB_BUCKET }}
+        MQTT_USR: ${{ secrets.MQTT_USR }}
+        MQTT_PWD: ${{ secrets.MQTT_PWD }}
+        MQTT_SERVER: ${{ secrets.MQTT_SERVER }}
+        MQTT_PORT: ${{ secrets.MQTT_PORT }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
