@@ -26,6 +26,7 @@ jobs:
       run: |
         npm install
         npm install -D webpack-cli
+        npm install ts-loader --save-dev
     
     - name: Build
       run: 
