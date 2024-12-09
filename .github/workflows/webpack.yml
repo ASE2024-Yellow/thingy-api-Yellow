@@ -21,9 +21,22 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
+      
     
     - name: Build
       run: |
         npm install
         npm install -D webpack-cli
         npx webpack
+      env:
+        MONGODB_URI: ${{ secret.MONGODB_URI }}
+        INFLUXDB_URI: ${{ secret.INFLUXDB_URI }}
+        INFLUXDB_TOKEN: ${{ secret.INFLUXDB_TOKEN }}
+        INFLUXDB_ORG: ${{ secret.INFLUXDB_ORG }}
+        INFLUXDB_BUCKET: ${{ secret.INFLUXDB_BUCKET }}
+        MQTT_USR: ${{ secret.MQTT_USR }}
+        MQTT_PWD: ${{ secret.MQTT_PWD }}
+        MQTT_SERVER: ${{ secret.MQTT_SERVER }}
+        MQTT_PORT: ${{ secret.MQTT_PORT }}
+        JWT_SECRET: ${{ secret.JWT_SECRET }}
+
