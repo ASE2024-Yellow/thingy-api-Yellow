@@ -1,0 +1,45 @@
+name: NodeJS with Webpack
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+    
+    - name: Install dependencies
+      run: |
+        npm install
+        npm install -D webpack-cli
+        npm install ts-loader --save-dev
+    
+    - name: Build
+      run: 
+        npx webpack
+      env:
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        INFLUXDB_URI: ${{ secrets.INFLUXDB_URI }}
+        INFLUXDB_TOKEN: ${{ secrets.INFLUXDB_TOKEN }}
+        INFLUXDB_ORG: ${{ secrets.INFLUXDB_ORG }}
+        INFLUXDB_BUCKET: ${{ secrets.INFLUXDB_BUCKET }}
+        MQTT_USR: ${{ secrets.MQTT_USR }}
+        MQTT_PWD: ${{ secrets.MQTT_PWD }}
+        MQTT_SERVER: ${{ secrets.MQTT_SERVER }}
+        MQTT_PORT: ${{ secrets.MQTT_PORT }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
