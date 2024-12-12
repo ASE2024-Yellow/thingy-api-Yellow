@@ -1,0 +1,247 @@
+openapi: '3.0.3'
+tags:
+  - name: Thingy
+info:
+  title: ASE2024-Yellow-Sprint2-API
+  version: '2.0'
+servers:
+  - url: http://localhost:3000
+paths:
+  /things/flips/subscribe:
+    get:
+      summary: subscribe to flip event
+      tags:
+        - Thingy
+      responses:
+        '200':
+          description: Flip detected
+          content:
+            text/event-stream:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    # example: "data: Flip detected\n\n"
+        '401':
+          description: Unauthorized
+        '404':
+          description: User not found
+        '400':
+          description: Thingy is not bound to the user
+  
+  /things/buttons/subscribe:
+    post:
+      summary: subscribe to flip event
+      tags:
+        - Thingy
+      responses:
+        '200':
+          description: Button press detected
+          content:
+            text/event-stream:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: object
+        '401':
+          description: Unauthorized
+        '404':
+          description: User not found
+        '400':
+          description: Thingy is not bound to the user
+  /things/flips:
+    get:
+      summary: Get flip event history
+      tags:
+        - Thingy
+      responses:
+        '200':
+          description: Flip event history retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    timestamp:
+                      type: string
+                      format: date-time
+                    event:
+                      type: string
+                      example: "Flip detected"
+        '401':
+          description: Unauthorized
+
+  /things/buttons:
+    get:
+      summary: Get button press event history
+      tags:
+        - Thingy
+      responses:
+        '200':
+          description: Button press event history retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    timestamp:
+                      type: string
+                      format: date-time
+                    event:
+                      type: string
+                      example: "Button press detected"
+        '401':
+          description: Unauthorized
+  /things/buzzer/{setting}:
+    post:
+      tags:
+        - Thingy
+      summary: Turn ON/OFF the Thingy's buzzer
+      parameters:
+        - name: setting
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: ['on', 'off']
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "{\"appId\":\"BUZZER\",\"data\":{\"frequency\":3000},\"messageType\":\"CFG_SET\"}"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: An error occurred while processing the request
+
+  /things/LED/setColor/{color}:
+    post:
+      tags:
+        - Thingy
+      summary: Set the color of the Thingy's LED
+      parameters:
+        - name: color
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: ['green', 'red', 'blue']
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "{\"appId\":\"LED\",\"data\":{\"color\":\"00ff00\"},\"messageType\":\"CFG_SET\"}"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: An error occurred while processing the request
+
+  
+  /things/sensorData/{sensorType}/statistics/{statistic}:
+    get:
+      summary: Get statistics of sensor data
+      tags:
+        - Thingy
+      parameters:
+        - name: sensorType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: ['TEMP', 'HUMID', 'AIR_PRESS', 'AIR_QUAL', 'CO2_EQUIV','LIGHT']
+        - name: statistic
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: ['min', 'max', 'average']
+        - name: startTime
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: endTime
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+         
+      responses:
+        '200':
+          description: Statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                  sensorType:
+                    type: string
+                  value:
+                    type: number
+        '401':
+          description: Unauthorized
+
+  
+
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
