@@ -52,6 +52,7 @@
     "@types/koa2-cors": "^2.0.5",
     "@types/mongoose": "^5.11.96",
     "commitizen": "^4.3.1",
-    "nodemon": "^3.1.7"
+    "nodemon": "^3.1.7",
+    "ts-jest": "^29.2.5"
   }
 }

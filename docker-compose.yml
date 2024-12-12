@@ -16,24 +16,25 @@ services:
     command: node dist/server.js
 
   mongo:
-    image: mongo:latest
+    image: mongo:lts
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
 
   influxdb:
-    image: influxdb:latest
+    image: influxdb:lts
     environment:
       - DOCKER_INFLUXDB_INIT_USERNAME=admin
-      - DOCKER_INFLUXDB_INIT_PASSWORD=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=adminadmin
       - DOCKER_INFLUXDB_INIT_ORG=Yellow
       - DOCKER_INFLUXDB_INIT_BUCKET=YellowBucket
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
     ports:
       - "8086:8086"
     volumes:
       - influxdb-data:/var/lib/influxdb2
-
+      - influxdb-config:/etc/influxdb2
 volumes:
   mongo-data:
   influxdb-data:

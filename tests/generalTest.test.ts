@@ -7,8 +7,11 @@ import User from '../models/userModel';
 import Thingy from '../models/thingyModel';
 import InfluxDBHandler, { ISensorData, IEventData } from '../utils/influxDBHandler';
 import 'koa';
+import dotenv from 'dotenv';
 import MongoDBHandler from '../utils/mongoDBHandler';
+import { Point } from '@influxdata/influxdb-client';
 
+dotenv.config();
 // connect to mongodb
 MongoDBHandler.getInstance().connect();
 
@@ -213,46 +216,22 @@ describe('UserController Tests', () => {
 });
 
 describe('InfluxDBHandler Tests', () => {
-    it('should write data point successfully', async () => {
-        const pointMock = { tag: jest.fn(), floatField: jest.fn(), timestamp: jest.fn() };
-        const writeApiMock = { writePoint: jest.fn(), close: jest.fn() };
+    it('should write and query data point successfully', async () => {
+        const query = `from(bucket: "${process.env.INFLUXDB_BUCKET}")
+            |> range(start: -30d)
+            |> filter(fn: (r) => r["_measurement"] == "flip_events")`;
+        const previous = await InfluxDBHandler.getInstance().queryEventData(query);
+        
+        let pointMock = new Point('flip_events')
+                                .tag('thingyName', 'yellow-2')
+                                .stringField('FLIP', 'NORMAL')
+                                .timestamp(new Date());
+       
 
-        jest
-            .spyOn(InfluxDBHandler.prototype, 'getClient')
-            .mockResolvedValueOnce({ getWriteApi: jest.fn().mockReturnValue(writeApiMock) } as any);
-
-        await InfluxDBHandler.getInstance().writeData(pointMock as any);
-
-        expect(writeApiMock.writePoint).toHaveBeenCalledWith(pointMock);
+        await InfluxDBHandler.getInstance().writeData(pointMock);
+        
+        const now = await InfluxDBHandler.getInstance().queryEventData(query);
+        expect(now.length).toBe(previous.length + 1);
     });
 
-    it('should query data successfully', async () => {
-        const query = 'some influx query';
-        const resultData: ISensorData[] = [
-            {
-                thingyName: 'thingy1',
-                type: 'TEMP',
-                value: 23.5,
-                timestamp: new Date('2023-01-20T08:00:00Z'),
-            },
-        ];
-
-        jest
-            .spyOn(InfluxDBHandler.prototype, 'getClient')
-            .mockResolvedValueOnce({
-                getQueryApi: jest.fn().mockReturnValue({
-                    queryRows: (q: string, callbacks: any) => {
-                        callbacks.next(
-                            ['thingy1', 'TEMP', '23.5', '2023-01-20T08:00:00Z'],
-                            { toObject: (row: any) => row }
-                        );
-                        callbacks.complete();
-                    },
-                }),
-            } as any);
-
-        const data = await InfluxDBHandler.getInstance().querySensorData(query);
-
-        expect(data).toEqual(resultData);
-    });
 });
