@@ -251,8 +251,7 @@ describe('InfluxDBHandler Tests', () => {
                 }),
             } as any);
 
-        const data = [] as ISensorData[];
-        await InfluxDBHandler.getInstance().queryData(query, data);
+        const data = await InfluxDBHandler.getInstance().querySensorData(query);
 
         expect(data).toEqual(resultData);
     });

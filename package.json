@@ -4,7 +4,7 @@
   "description": "Backend API of the Smart Mobility Project - ASE 2024 Course",
   "main": "server.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npx jest",
     "commit": "git-cz",
     "start": "./node_modules/.bin/ts-node server.ts",
     "build": "tsc"
@@ -38,6 +38,7 @@
     "winston": "^3.15.0"
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
     "@types/bcrypt": "^5.0.2",
     "@types/dotenv": "^6.1.1",
     "@types/jest": "^29.5.14",

@@ -21,6 +21,13 @@ export interface ISensorData {
     value: number;
 }
 
+export interface IEventData {
+    thingyName: string;
+    timestamp: Date;
+    type: 'FLIP' | 'BUTTON';
+    value: string;
+}
+
 /**
  * Singleton class to handle InfluxDB connection.
  * 
@@ -109,11 +116,48 @@ class InfluxDBHandler {
      * @returns {Promise<void>} A promise that resolves when the query operation is complete.
      * @throws Will throw an error if the query operation fails.
      */
-    public async queryData(query: string): Promise<ISensorData[]> {
+    public async querySensorData(query: string): Promise<ISensorData[]> {
         try {
             console.log(query);
             const queryApi = (await this.getClient()).getQueryApi(process.env.INFLUXDB_ORG!);
-            var result: ISensorData[] = [];
+            const result: ISensorData[] = [];
+
+            await new Promise<void>((resolve, reject) => {
+                queryApi.queryRows(query, {
+                    next: (row, tableMeta) => {
+                        // console.log(row);
+                        const rowObject = tableMeta.toObject(row);
+                        // console.log(rowObject);
+                        result.push({
+                            thingyName: rowObject.device,
+                            type: rowObject._field,
+                            value: rowObject._value,
+                            timestamp: rowObject._time,
+                        });
+                    },
+                    error: error => {
+                        console.error('Error querying data from InfluxDB', error);
+                        reject(error);
+                    },
+                    complete: () => {
+                        console.log('Query complete');
+                        console.log(result);
+                        resolve();
+                    },
+                });
+            });
+
+            return result;
+        } catch (error) {
+            console.error('Error querying data from InfluxDB', error);
+            throw error;
+        }
+    }
+    public async queryEventData(query: string): Promise<IEventData[]> {
+        try {
+            console.log(query);
+            const queryApi = (await this.getClient()).getQueryApi(process.env.INFLUXDB_ORG!);
+            const result: IEventData[] = [];
 
             await new Promise<void>((resolve, reject) => {
                 queryApi.queryRows(query, {
