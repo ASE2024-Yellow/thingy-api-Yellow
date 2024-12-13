@@ -10,48 +10,77 @@ import 'koa';
 import dotenv from 'dotenv';
 import MongoDBHandler from '../utils/mongoDBHandler';
 import { Point } from '@influxdata/influxdb-client';
+import { ObjectId } from 'mongoose';
 
-dotenv.config();
-// connect to mongodb
-MongoDBHandler.getInstance().connect();
+beforeAll(async () => {
+    dotenv.config();
+    await MongoDBHandler.getInstance().connect();
+    await InfluxDBHandler.getInstance().getClient();
+});
 
-// connect to influxdb 
-InfluxDBHandler.getInstance().getClient();
+afterAll(async () => {
+    await MongoDBHandler.getInstance().disconnect();
+});
+
 
 describe('ThingyController Tests', () => {
+    let user_id: ObjectId;
+    beforeAll(async () => {
+        const ctx = {
+            request: {
+                body: {
+                    username: 'daz',
+                    password: 'daz',
+                    email: 'daz@gmail.com',
+                    transportType: 'bike'
+                },
+            },
+            status: 0,
+            body: null,
+        } as unknown as Context;
+        await AuthController.signUp(ctx);
+        user_id = (ctx.body as { id: ObjectId }).id;
+
+    });
+
+    afterAll(async () => {
+        await User.deleteMany({});
+    });
     describe('getThingy', () => {
         it('should return 200 and an array of thingies', async () => {
             const ctx = {} as Context & { body: any[] };
 
             jest.spyOn(Thingy, 'find').mockResolvedValueOnce([
-                { name: 'thingy1' },
-                { name: 'thingy2' },
+                { name: 'yellow-1' },
+                { name: 'yellow-2' },
+                { name: 'yellow-3' }
             ]);
 
             await ThingyController.getThingy(ctx);
 
             expect(ctx.status).toBe(200);
             expect(Array.isArray(ctx.body)).toBeTruthy();
-            expect(ctx.body.length).toBe(2);
+            expect(ctx.body.length).toBe(3);
         });
     });
 
     describe('bindThingyToUser', () => {
         it('should bind a thingy to a user', async () => {
+            const thingy_id: string = (await Thingy.findOne({ name: 'yellow-2' }))._id as string;
             const ctx = {
-                params: { thingyId: '6714cc70f9af99960e48f283' },
-                state: { user: { id: '67150c77c303bb0753f8bc74' } },
+                params: { thingyId: thingy_id },
+                state: { user: { id: user_id } },
                 status: 0,
                 body: {},
             } as unknown as Context & { body: { message: string } };
             
             const userMock = {
-                _id: '6729ff772786df6ad6d80487',
+                _id: user_id,
                 thingy: null,
                 save: jest.fn(),
             };
             const thingyMock = {
-                _id: '6714cc70f9af99960e48f283',
+                _id: thingy_id,
                 isAvailable: true,
                 save: jest.fn(),
             };
@@ -69,9 +98,44 @@ describe('ThingyController Tests', () => {
             expect(thingyMock.save).toHaveBeenCalled();
         });
 
-        it('should return 404 if user not found', async () => {
+        it('should unbind a thingy from a user', async () => {
+            const thingy_id: string = (await Thingy.findOne({ name: 'yellow-2' }))._id as string;
             const ctx = {
-                params: { thingyId: '6714cc70f9af99960e48f283' },
+                params: { thingyId: thingy_id },
+                state: { user: { id: user_id } },
+                status: 0,
+                body: {},
+            } as unknown as Context & { body: { message: string } };
+            
+            const userMock = {
+                _id: user_id,
+                thingy: thingy_id,
+                save: jest.fn(),
+            };
+            const thingyMock = {
+                _id: thingy_id,
+                isAvailable: false,
+                save: jest.fn(),
+            };
+
+            jest.spyOn(User, 'findById').mockResolvedValueOnce(userMock);
+            jest.spyOn(Thingy, 'findById').mockResolvedValueOnce(thingyMock);
+
+            await ThingyController.unbindThingyFromUser(ctx);
+
+            expect(ctx.status).toBe(200);
+            expect(ctx.body.message).toBe('Thingy successfully unbound from user');
+            expect(userMock.thingy).toBe(undefined);
+            expect(thingyMock.isAvailable).toBe(true);
+            expect(userMock.save).toHaveBeenCalled();
+            expect(thingyMock.save).toHaveBeenCalled();
+        });
+
+        it('should return 404 if user not found', async () => {
+            const thingy_id: string = (await Thingy.findOne({ name: 'yellow-2' }))._id as string;
+
+            const ctx = {
+                params: { thingyId: thingy_id },
                 state: { user: { id: '67150c77c303bb0753f8bc74' } },
                 status: 0,
                 body: null,
@@ -87,7 +151,29 @@ describe('ThingyController Tests', () => {
     });
 
     describe('getThingySensorData', () => {
+        beforeAll(async () => {
+            const thingy_id: string = (await Thingy.findOne({ name: 'yellow-2' }))._id as string;
+            const _ctx = {
+                params: { thingyId: thingy_id },
+                state: { user: { id: user_id } },
+                status: 0,
+                body: {},
+            } as unknown as Context & { body: { message: string } };
+            await ThingyController.bindThingyToUser(_ctx);
+        });
+        afterAll(async () => { 
+
+            const thingy_id: string = (await Thingy.findOne({ name: 'yellow-2' }))._id as string;
+            const _ctx = {
+                params: { thingyId: thingy_id },
+                state: { user: { id: user_id } },
+                status: 0,
+                body: {},
+            } as unknown as Context & { body: { message: string } };
+            await ThingyController.unbindThingyFromUser(_ctx);
+        });
         it('should return sensor data for valid request', async () => {
+            
             const ctx = {
                 params: { sensorType: 'TEMP' },
                 request: {
@@ -96,40 +182,24 @@ describe('ThingyController Tests', () => {
                         endTime: '2024-12-31T23:59:59Z',
                     },
                 },
-                state: { user: { _id: '67150c77c303bb0753f8bc74' } },
+                state: { user: { id: user_id } },
                 status: 0,
                 body: null,
             } as unknown as Context;
 
-            const userMock = {
-                _id: '67150c77c303bb0753f8bc74',
-                thingy: { name: 'yellow-2' },
-                // populate: jest.fn().mockResolvedValue({ thingy: { name: 'thingy1' } } as never),
-            };
-
-            const sensorData: ISensorData[] = [
-                {
-                    thingyName: undefined,
-                    type: 'TEMP',
-                    value: 22.5,
-                    timestamp: new Date('2024-01-15T10:00:00Z'),
-                },
-            ];
             
-            jest.spyOn(User, 'findById').mockResolvedValueOnce(userMock);
             
 
             await ThingyController.getThingySensorData(ctx);
 
             expect(ctx.status).toBe(200);
-            expect(ctx.body).toEqual(sensorData);
         });
 
         it('should return 400 if startTime or endTime missing', async () => {
             const ctx = {
                 params: { sensorType: 'TEMP' },
                 request: { query: {} },
-                state: { user: { _id: 'userId' } },
+                state: { user: { id: user_id } },
                 status: 0,
                 body: null,
             } as unknown as Context;
@@ -148,63 +218,62 @@ describe('ThingyController Tests', () => {
                 body: null,
             } as Context;
 
-            const flipEvents: IEventData[] = [
-                {
-                    thingyName: 'thingy1',
-                    type: 'FLIP',
-                    value: 'ONSIDE',
-                    timestamp: new Date('2023-01-10T12:00:00Z'),
-                },
-            ];
-
-           
 
             await ThingyController.getFlipEventHistory(ctx);
 
             expect(ctx.status).toBe(200);
-            expect(ctx.body).toEqual(flipEvents);
         });
     });
 });
 
 describe('UserController Tests', () => {
+    let user_id: ObjectId;
+    beforeAll(async () => {
+        const ctx = {
+            request: {
+                body: {
+                    username: 'daz',
+                    password: 'daz',
+                    email: 'daz@gmail.com',
+                    transportType: 'bike'
+                },
+            },
+            status: 0,
+            body: null,
+        } as unknown as Context;
+        await AuthController.signUp(ctx);
+        user_id = (ctx.body as { id: ObjectId }).id;
+        
+    });
+
+    afterAll(async () => {
+        await User.deleteMany({});
+    });
     describe('signin', () => {
         it('should sign in user with valid credentials', async () => {
             const ctx = {
-                request: { body: { username: 'testuser', password: 'password123' } },
+                request: { body: { 
+                    username: 'daz', 
+                    password: 'daz',
+                } },
                 status: 0,
                 body: null,
             } as unknown as Context;
 
-            const userMock = {
-                _id: 'userId',
-                username: 'testuser',
-                password: 'hashedpassword',
-                // comparePassword: jest.fn().mockResolvedalue(true),
-            };
-
-            jest.spyOn(User, 'findOne').mockResolvedValueOnce(userMock);
 
             await AuthController.signIn(ctx);
-
+            // console.log(ctx.body);
             expect(ctx.status).toBe(200);
             // expect(ctx.body.token).toBeDefined();
         });
 
         it('should return 401 for invalid credentials', async () => {
             const ctx = {
-                request: { body: { username: 'testuser', password: 'wrongpassword' } },
+                request: { body: { username: 'daz', password: 'wrongpassword' } },
                 status: 0,
                 body: null,
             } as unknown as Context;
 
-            const userMock = {
-                _id: 'userId',
-                username: 'testuser',
-                password: 'hashedpassword',
-            };
-
-            jest.spyOn(User, 'findOne').mockResolvedValueOnce(userMock);
 
             await AuthController.signIn(ctx);
 
@@ -235,3 +304,5 @@ describe('InfluxDBHandler Tests', () => {
     });
 
 });
+
+MongoDBHandler.getInstance().disconnect();

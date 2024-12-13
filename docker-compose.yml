@@ -9,8 +9,6 @@ services:
     depends_on:
       - mongo
       - influxdb
-    environment:
-      - MONGODB_URI=mongodb://mongo:27017/database
     volumes:
       - .:/usr/src/app
     command: node dist/server.js

@@ -65,6 +65,8 @@ class InfluxDBHandler {
         return this.client;
     }
 
+    
+
     /**
      * Connect to the InfluxDB instance.
      * 

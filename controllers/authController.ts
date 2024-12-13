@@ -62,7 +62,7 @@ export const signUp = async (ctx: Context) => {
  */
 export const signIn = async (ctx: Context) => {
     const { username, password } = ctx.request.body as { username: string, password: string };
-
+    console.log(username, password);
     // Validate input
     if (!username || !password) {
       ctx.status = 400;
@@ -74,7 +74,7 @@ export const signIn = async (ctx: Context) => {
     const user = await User.findOne({ username });
     if (!user) {
       ctx.status = 401;
-      ctx.body = { message: 'Invalid credentials.' };
+      ctx.body = { message: 'User not found' };
       return;
     }
 

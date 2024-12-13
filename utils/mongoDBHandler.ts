@@ -34,6 +34,19 @@ class MongoDBHandler {
         }
     }
 
+    public async disconnect(): Promise<void> {
+        try {
+            if (!this.connected) {
+                return;
+            }
+            await mongoose.disconnect();
+            console.log('disconnected from database');
+            this.connected = false;
+        } catch (error) {
+            console.error('Error disconnecting from MongoDB', error);
+        }
+    }
+
     /**
      * Hardcodes some things to the database
      * - This could be done by admin users in the future.

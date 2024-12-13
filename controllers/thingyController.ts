@@ -37,6 +37,8 @@ class ThingyController {
      * @param next - Koa next middleware function.
      */
     static async bindThingyToUser(ctx: Context) {
+        // console.log('bindThingyToUser');
+        // console.log(ctx.state.user);
         const userId = ctx.state.user.id;
         const thingyId = ctx.params.thingyId;
 
