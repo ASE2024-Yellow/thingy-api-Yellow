@@ -94,7 +94,7 @@ To run MongoDB:
 docker run -d -p 27017:27017 \
 	--name bike-mongodb \
 	-v "$PWD/data-mongodb:/data/db" \
-	mongo:lts
+	mongo:8.0.4
 ```
 
 Install dependencies:
