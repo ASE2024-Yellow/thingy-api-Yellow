@@ -4,7 +4,7 @@
   "description": "Backend API of the Smart Mobility Project - ASE 2024 Course",
   "main": "server.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npx jest",
     "commit": "git-cz",
     "start": "./node_modules/.bin/ts-node server.ts",
     "build": "tsc"
@@ -31,15 +31,17 @@
     "koa-router": "^13.0.1",
     "koa-swagger-decorator": "^1.8.7",
     "koa2-cors": "^2.0.6",
-    "mongoose": "^8.8.4",
+    "mongoose": "^8.7.0",
     "mqtt": "^5.10.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2",
     "winston": "^3.15.0"
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
     "@types/bcrypt": "^5.0.2",
     "@types/dotenv": "^6.1.1",
+    "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/koa": "^2.15.0",
     "@types/koa__cors": "^5.0.0",
@@ -50,6 +52,7 @@
     "@types/koa2-cors": "^2.0.5",
     "@types/mongoose": "^5.11.96",
     "commitizen": "^4.3.1",
-    "nodemon": "^3.1.7"
+    "nodemon": "^3.1.7",
+    "ts-jest": "^29.2.5"
   }
 }

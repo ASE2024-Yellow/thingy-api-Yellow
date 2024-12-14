@@ -44,30 +44,64 @@ attached to a mobility device (bike, wheelchair, etc.).Detects falls and emits s
     cd thingy-api-Yellow
     ```
 
-3. Install dependencies:
-
-    ```bash
-    npm install
-    ```
-
 ## Configuration
 
 Create a `.env` file in the root directory and add the following environment variables:
 
 ```
-MONGODB_URI='your-mongodb-uri'
-INFLUXDB_URI='your-influxdb-uri'
-INFLUXDB_TOKEN='your-influxdb-token'
-MQTT_USR='your-mqtt-username'
-MQTT_PWD='your-mqtt-password'
-MQTT_SERVER='your-mqtt-server-url'
-MQTT_PORT='your-mqtt-port'
-JWT_SECRET='your-jwt-secret'
+MONGODB_URI = ''
+
+INFLUXDB_URI = ''
+INFLUXDB_TOKEN = ''
+INFLUXDB_ORG = ''
+INFLUXDB_BUCKET = ''
+
+MQTT_USR = ''
+MQTT_PWD = ''
+MQTT_SERVER = ''
+MQTT_PORT = 
+
+JWT_SECRET = ''
+
 ```
 
 Replace the placeholders with your actual configuration values.
 
-## Usage
+## Build from source
+
+make sure InfluxDB and MongoDB are running in the background. 
+
+For InfluxDB, it is necessary to do initial setup:
+
+```bash
+docker run -d -p 8086:8086 \
+	--name bike-influxdb \
+    -v "$PWD/data-influxdb:/var/lib/influxdb2" \
+    -v "$PWD/config-influxdb:/etc/influxdb2" \
+    -e DOCKER_INFLUXDB_INIT_MODE=setup \
+    -e DOCKER_INFLUXDB_INIT_USERNAME=admin \
+    -e DOCKER_INFLUXDB_INIT_PASSWORD=adminadmin \
+    -e DOCKER_INFLUXDB_INIT_ORG=Yellow \
+    -e DOCKER_INFLUXDB_INIT_BUCKET=YellowBucket \
+    -e DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token \
+    influxdb:2
+
+```
+
+To run MongoDB:
+
+```bash
+docker run -d -p 27017:27017 \
+	--name bike-mongodb \
+	-v "$PWD/data-mongodb:/data/db" \
+	mongo:8.0.4
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
 
 Start the server:
 

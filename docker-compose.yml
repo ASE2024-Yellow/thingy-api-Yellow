@@ -6,29 +6,42 @@ services:
       - "3000:3000"
     build:
       target: production
-    depends_on:
-      - mongo
-      - influxdb
     environment:
       - MONGODB_URI=mongodb://mongo:27017/database
+      - INFLUXDB_URI=http://influxdb2:8086
+    depends_on:
+      - mongo
+      - influxdb2
     volumes:
       - .:/usr/src/app
     command: node dist/server.js
 
   mongo:
-    image: mongo:latest
+    image: mongo
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
 
-  influxdb:
-    image: influxdb:latest
+  influxdb2:
+    image: influxdb:2
     ports:
-      - "8086:8086"
+      - 8086:8086
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USERNAME}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN}
+      DOCKER_INFLUXDB_INIT_ORG: Yellow
+      DOCKER_INFLUXDB_INIT_BUCKET: YellowBucket
     volumes:
-      - influxdb-data:/var/lib/influxdb2
-
+      - type: volume
+        source: influxdb2-data
+        target: /var/lib/influxdb2
+      - type: volume
+        source: influxdb2-config
+        target: /etc/influxdb2
 volumes:
+  influxdb2-data:
+  influxdb2-config:
   mongo-data:
-  influxdb-data:

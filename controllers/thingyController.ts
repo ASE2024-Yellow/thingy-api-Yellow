@@ -25,7 +25,7 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async getThingy(ctx: Context, next: Next) {
+    static async getThingy(ctx: Context) {
         const things = await Thingy.find();
         ctx.body = things;
         ctx.status = 200;
@@ -36,7 +36,9 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async bindThingyToUser(ctx: Context, next: Next) {
+    static async bindThingyToUser(ctx: Context) {
+        // console.log('bindThingyToUser');
+        // console.log(ctx.state.user);
         const userId = ctx.state.user.id;
         const thingyId = ctx.params.thingyId;
 
@@ -73,7 +75,7 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async unbindThingyFromUser(ctx: Context, next: Next) {
+    static async unbindThingyFromUser(ctx: Context) {
        const userId = ctx.state.user.id;
         const user = await User.findById(userId);
         if (!user) {
@@ -119,7 +121,7 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async getThingySensorData(ctx: Context, next: Next) {
+    static async getThingySensorData(ctx: Context) {
         const userId = ctx.state.user.id;
         const sensorType = ctx.params.sensorType;
         const startTime = ctx.request.query.startTime;
@@ -156,11 +158,11 @@ class ThingyController {
             |> filter(fn: (r) => r["thingyName"] == "${userPopulated.thingy.name}")
             |> filter(fn: (r) => r["_field"] == "${sensorType}")`;
         ctx.status = 200;
-        ctx.body = await InfluxDBHandler.getInstance().queryData(query);
+        ctx.body = await InfluxDBHandler.getInstance().querySensorData(query);
     }
   
 
-    static async subscribetoFlipEvent(ctx: Context, next: Next) {
+    static async subscribetoFlipEvent(ctx: Context) {
         console.log('subscribetoFlipEvent');
         const userId = ctx.state.user.id;
         const user = await User.findById(userId);
@@ -214,7 +216,7 @@ class ThingyController {
         ctx.body = stream;
     }
     
-    static async subscribetoButtonEvent(ctx: Context, next: Next) {
+    static async subscribetoButtonEvent(ctx: Context) {
         console.log('subscribetoButtonEvent');
         const userId = ctx.state.user.id;
         const user = await User.findById(userId);
@@ -275,11 +277,11 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async getFlipEventHistory(ctx: Context, next: Next) {
+    static async getFlipEventHistory(ctx: Context) {
         const query = `from(bucket: "${process.env.INFLUXDB_BUCKET}")
             |> range(start: -30d)
             |> filter(fn: (r) => r["_measurement"] == "flip_events")`;
-        const flipEvents = await InfluxDBHandler.getInstance().queryData(query);
+        const flipEvents = await InfluxDBHandler.getInstance().queryEventData(query);
         ctx.status = 200;
         ctx.body = flipEvents;
     }
@@ -289,11 +291,11 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async getButtonEventHistory(ctx: Context, next: Next) {
+    static async getButtonEventHistory(ctx: Context) {
         const query = `from(bucket: "${process.env.INFLUXDB_BUCKET}")
             |> range(start: -30d)
             |> filter(fn: (r) => r["_measurement"] == "flip_events")`;
-        const buttonEvents = await InfluxDBHandler.getInstance().queryData(query);
+        const buttonEvents = await InfluxDBHandler.getInstance().queryEventData(query);
         ctx.status = 200;
         ctx.body = buttonEvents;
     }
@@ -310,7 +312,7 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async setBuzzer(ctx: Context, next: Next) {
+    static async setBuzzer(ctx: Context) {
         const userId = ctx.state.user.id;
         const setting = ctx.params.setting; // 'on' or 'off'
 
@@ -364,7 +366,7 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async setLEDColor(ctx: Context, next: Next) {
+    static async setLEDColor(ctx: Context) {
         const userId = ctx.state.user.id;
         const color = ctx.params.color; // 'green', 'red', 'blue'
 
@@ -423,7 +425,7 @@ class ThingyController {
      * @param ctx - Koa context object.
      * @param next - Koa next middleware function.
      */
-    static async getSensorDataStatistics(ctx: Context, next: Next) {
+    static async getSensorDataStatistics(ctx: Context) {
         const userId = ctx.state.user.id;
         const sensorType = ctx.params.sensorType;
         const statistic = ctx.params.statistic; // 'min', 'max', 'average'

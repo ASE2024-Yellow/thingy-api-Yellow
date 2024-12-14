@@ -1,3 +1,13 @@
+# ignore folders from database docker
+config-influxdb/
+data-influxdb/
+data-mongodb/
+
+# ignore secret files
+influxdb2-admin-password
+influxdb2-admin-token
+influxdb2-admin-username
+
 # configs
 config/
 
