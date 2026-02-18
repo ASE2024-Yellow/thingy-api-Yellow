@@ -1,6 +1,6 @@
 # thingy-api-Yellow
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f787516c9d074c3bb14e8155cdd1d683)](https://app.codacy.com?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
-![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
 ![Language: TypeScript](https://img.shields.io/badge/Language-TypeScript-3178c6?logo=typescript&logoColor=white)
 ![Framework: Koa](https://img.shields.io/badge/Framework-Koa-33333d?logo=koa&logoColor=white)
 ![Database: MongoDB](https://img.shields.io/badge/Database-MongoDB-47A248?logo=mongodb&logoColor=white)
